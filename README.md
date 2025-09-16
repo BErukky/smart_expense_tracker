@@ -1,6 +1,6 @@
 # Smart Expense Tracker
 
-A simple and clean Flutter app to track your daily expenses. Built with Flutter and Dart, this app allows you to add, view, and delete expenses with local storage support.
+A beautiful and intuitive Flutter app to track your daily expenses. Features a stunning welcome screen with animations and smooth transitions. Built with Flutter and Dart, this app allows you to add, view, and delete expenses with local storage support.
 
 ## Features
 
@@ -21,6 +21,15 @@ A simple and clean Flutter app to track your daily expenses. Built with Flutter 
 - **Provider** - State management (ready for future enhancements)
 
 ## Screenshots
+
+### Welcome Screen
+*Beautiful animated welcome screen with gradient background*
+
+### Home Screen
+*Clean expense list with total calculation*
+
+### Add Expense
+*Simple form to add new expenses*
 
 *Screenshots will be added here*
 
@@ -106,6 +115,8 @@ To push this project to GitHub:
 - 🔄 Cloud sync support
 - 🎨 Dark mode theme
 - 📅 Date range filtering
+- 🎭 More welcome screen animations
+- 🌟 Splash screen customization
 
 ## License
 
