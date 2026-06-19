@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:currency_picker/currency_picker.dart';
 import 'home_screen.dart';
+import '../settings_provider.dart';
 
-/// Welcome screen with beautiful design and smooth transition
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -49,131 +51,150 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
 
   void _navigateToHome() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const HomeScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeInOut,
-              )),
-              child: child,
-            ),
-          );
+    final settings = context.read<SettingsProvider>();
+
+    if (!settings.isCurrencySet) {
+      showCurrencyPicker(
+        context: context,
+        showFlag: true,
+        showCurrencyName: true,
+        showCurrencyCode: true,
+        onSelect: (Currency currency) {
+          settings.setCurrency(currency.symbol);
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const HomeScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(1.0, 0.0),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      )),
+                      child: child,
+                    ),
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 800),
+              ),
+            );
+          }
         },
-        transitionDuration: const Duration(milliseconds: 800),
-      ),
-    );
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const HomeScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOut,
+                )),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 800),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF87CEEB), // Sky blue
-              Color(0xFFADD8E6), // Light blue
-              Color(0xFFE0F6FF), // Very light blue
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Main content area
-              Expanded(
-                child: Center(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // App Icon/Logo placeholder
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.account_balance_wallet,
-                              size: 60,
-                              color: Color(0xFF4A90E2),
-                            ),
+      backgroundColor: const Color(0xFF12121D),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00E5FF).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3), width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00E5FF).withOpacity(0.2),
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 40),
-                          // App Title
-                          const Text(
-                            'Smart Expense\nTracker',
+                          child: const Icon(
+                            Icons.lock_clock,
+                            size: 60,
+                            color: Color(0xFF00E5FF),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        const Text(
+                          'Impulse\nControl',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            height: 1.1,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                          child: Text(
+                            'Stop the 1-click economy.\nEverything you want enters a 48-hour cooling off queue.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              height: 1.2,
-                              shadows: [
-                                Shadow(
-                                  offset: Offset(0, 2),
-                                  blurRadius: 4,
-                                  color: Colors.black26,
-                                ),
-                              ],
+                              fontSize: 16,
+                              color: Colors.white.withOpacity(0.6),
+                              height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          // Subtitle
-                          Text(
-                            'Track your expenses with ease',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              // Start button at bottom
-              Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _StartButton(onPressed: _navigateToHome),
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: _StartButton(onPressed: _navigateToHome),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// Custom animated start button with hover effect
 class _StartButton extends StatefulWidget {
   final VoidCallback onPressed;
 
@@ -232,27 +253,26 @@ class _StartButtonState extends State<_StartButton>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: double.infinity,
-          height: 60,
+          height: 64,
           decoration: BoxDecoration(
-            color: _isPressed ? Colors.white : const Color(0xFF4A90E2),
-            borderRadius: BorderRadius.circular(30),
+            color: _isPressed ? const Color(0xFF00B3CC) : const Color(0xFF00E5FF),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: _isPressed ? 5 : 15,
-                offset: Offset(0, _isPressed ? 2 : 8),
+                color: const Color(0xFF00E5FF).withOpacity(_isPressed ? 0.2 : 0.4),
+                blurRadius: _isPressed ? 10 : 20,
+                offset: Offset(0, _isPressed ? 4 : 8),
               ),
             ],
           ),
-          child: Center(
-            child: AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
+          child: const Center(
+            child: Text(
+              'Take Control',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: _isPressed ? const Color(0xFF4A90E2) : Colors.white,
+                color: Colors.black,
               ),
-              child: const Text('Start'),
             ),
           ),
         ),

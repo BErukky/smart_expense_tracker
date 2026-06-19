@@ -1,127 +1,110 @@
-# Smart Expense Tracker
+# 🔒 Impulse Control
 
-A beautiful and intuitive Flutter app to track your daily expenses. Features a stunning welcome screen with animations and smooth transitions. Built with Flutter and Dart, this app allows you to add, view, and delete expenses with local storage support.
+> **Stop the 1-click economy. Every purchase you want enters a mandatory 48-hour cooling off queue.**
 
-## Features
+A smart, beautifully designed Flutter app that helps you fight impulse buying by forcing a 48-hour waiting period before you can buy anything. If you still want it after 48 hours, go ahead — but most of the time, you won't.
 
-- ✅ **Welcome Screen**: Beautiful animated welcome page with smooth transitions
-- ✅ **Add Expenses**: Easily add new expenses with title and amount
-- ✅ **View Expenses**: See all your expenses in a clean, organized list
-- ✅ **Delete Expenses**: Remove expenses you no longer need
-- ✅ **Total Calculation**: Automatically calculates and displays total expenses
-- ✅ **Local Storage**: All data is saved locally using SharedPreferences
-- ✅ **Responsive UI**: Works perfectly on both Android and iOS
-- ✅ **Clean Design**: Simple, intuitive interface for easy expense tracking
+---
 
-## Tech Stack
+## ✨ Features
 
-- **Flutter** - UI framework
-- **Dart** - Programming language
-- **SharedPreferences** - Local data storage
-- **Provider** - State management (ready for future enhancements)
+### 🧠 The Core Mechanic
+- **48-Hour Cooling Queue** — Add any item you want to buy. It locks for 48 hours with a live countdown timer.
+- **Buy or Pass** — Once unlocked, you decide. Hit "Pass" and the money is counted as saved.
+- **Money Saved Dashboard** — A real-time total of every purchase you successfully passed on.
 
-## Screenshots
+### 🎨 Premium UI/UX
+- **Dark Mode & Light Mode** — Toggle between a sleek dark neon aesthetic and a clean professional light mode.
+- **Hero Image Cards** — Paste an image URL when adding an item and the card renders it as a beautiful background with gradient overlay.
+- **Desire Level Badges** — Rate your impulse Low / Medium / High. Cards color-code themselves (green, orange, red) to reflect your urgency.
 
-### Welcome Screen
-*Beautiful animated welcome screen with gradient background*
+### 🌍 Global Ready
+- **Dynamic Currency Picker** — On first launch, pick your local currency from a searchable offline database (NGN ₦, EUR €, GBP £, USD $, and 150+ more). No APIs. No costs.
+- **Persistent Settings** — Your theme and currency choices are saved locally and remembered across sessions.
 
-### Home Screen
-*Clean expense list with total calculation*
+### 🔔 Smart Notifications *(Android & iOS)*
+- **24-Hour Reminder** — "Halfway there! Still thinking about it?"
+- **1-Hour Warning** — "Almost time to decide."
+- **Unlock Alert** — "Your item is ready! Buy it or pass and save?"
+- Notifications are **automatically cancelled** if you decide early.
 
-### Add Expense
-*Simple form to add new expenses*
+---
 
-*Screenshots will be added here*
+## 📸 Tech Stack
 
-## Getting Started
+| Layer | Technology |
+|---|---|
+| Framework | Flutter 3.x |
+| Language | Dart |
+| State Management | Provider (`ChangeNotifier`) |
+| Local Storage | `shared_preferences` |
+| Notifications | `flutter_local_notifications` + `timezone` |
+| Currency Data | `currency_picker` |
+| ID Generation | `uuid` |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
-- Flutter SDK installed on your machine
-- Android Studio or VS Code with Flutter extensions
-- Android/iOS emulator or physical device
+- Flutter SDK (`^3.9.0`)
+- Dart SDK (`^3.9.0`)
+- A connected device, emulator, or Chrome browser
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/smart_expense_tracker.git
-   cd smart_expense_tracker
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/your-username/impulse-control.git
 
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+# Navigate into the project
+cd impulse-control
 
-3. **Run the app**
-   ```bash
-   flutter run
-   ```
+# Install dependencies
+flutter pub get
 
-## Project Structure
+# Run the app (Chrome for web, or connect a device)
+flutter run -d chrome
+```
+
+> **Windows Users**: Ensure **Developer Mode** is enabled in Settings → System → Developer Settings before running `flutter pub get`.
+
+---
+
+## 🗂️ Project Structure
 
 ```
 lib/
-├── main.dart                 # App entry point
+├── main.dart                  # App entry point, theme engine
+├── settings_provider.dart     # Global state: theme + currency
 ├── models/
-│   └── expense.dart         # Expense data model
+│   └── wish_item.dart         # WishItem data model (with DesireLevel)
 ├── screens/
-│   ├── welcome_screen.dart  # Beautiful welcome screen with animations
-│   ├── home_screen.dart     # Main screen with expense list
-│   └── add_expense_screen.dart # Form to add new expenses
-└── widgets/
-    └── expense_tile.dart    # Reusable expense display widget
+│   ├── welcome_screen.dart    # Animated landing + currency onboarding
+│   ├── home_screen.dart       # Main dashboard + queue
+│   └── add_wish_screen.dart   # Add item form
+├── widgets/
+│   └── wish_tile.dart         # Rich card with countdown timer
+└── services/
+    └── notification_service.dart  # Local notification scheduling
 ```
 
-## How to Use
+---
 
-1. **Welcome**: Launch the app to see the beautiful welcome screen with animations
-2. **Start**: Tap the "Start" button to enter the main app with smooth transition
-3. **Adding an Expense**: Tap the floating action button (+) to open the add expense form
-4. **Viewing Expenses**: All expenses are displayed on the home screen with date and amount
-5. **Deleting an Expense**: Tap the delete icon (🗑️) next to any expense to remove it
-6. **Total Amount**: The total of all expenses is displayed at the top of the screen
+## 🗺️ Roadmap
 
-## Contributing
+- [ ] Analytics screen (spending habits over time)
+- [ ] Category tags for wish items
+- [ ] Social sharing ("I just saved $X on a [item]!")
+- [ ] Export/import queue as JSON
+- [ ] Widget for home screen (Android/iOS)
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
-## Pushing to GitHub
-
-To push this project to GitHub:
-
-1. **Create a new repository on GitHub** (don't initialize with README)
-
-2. **Initialize git and add remote**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: Smart Expense Tracker"
-   git branch -M main
-   git remote add origin https://github.com/yourusername/smart_expense_tracker.git
-   git push -u origin main
-   ```
-
-## Future Enhancements
-
-- 📊 Expense categories and filtering
-- 📈 Charts and analytics
-- 💾 Export data to CSV
-- 🔄 Cloud sync support
-- 🎨 Dark mode theme
-- 📅 Date range filtering
-- 🎭 More welcome screen animations
-- 🌟 Splash screen customization
-
-## License
+## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-**Made with ❤️ using Flutter**
+**Made with ❤️ using Flutter** — *Because your wallet deserves a bodyguard.*
