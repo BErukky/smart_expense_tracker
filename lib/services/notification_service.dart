@@ -57,8 +57,9 @@ class NotificationService {
   Future<void> scheduleWishNotifications(WishItem item) async {
     if (!_isInitialized) await init();
 
-    final unlockTime = item.createdAt.add(const Duration(hours: 48));
-    final halfWayTime = item.createdAt.add(const Duration(hours: 24));
+    final unlockTime = item.unlockAt;
+    final totalDuration = Duration(hours: item.lockDurationHours);
+    final halfWayTime = item.createdAt.add(Duration(minutes: (totalDuration.inMinutes / 2).round()));
     final oneHourLeftTime = unlockTime.subtract(const Duration(hours: 1));
 
     final baseId = _generateNotificationId(item.id);
@@ -77,12 +78,12 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    // 1. Halfway Reminder (24h left)
+    // 1. Halfway Reminder
     if (halfWayTime.isAfter(DateTime.now())) {
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id: baseId + 1,
         title: 'Halfway there! 🕰️',
-        body: 'You have 24 hours left before you can decide on "${item.title}".',
+        body: 'You are halfway through your cooling period for "${item.title}".',
         scheduledDate: tz.TZDateTime.from(halfWayTime, tz.local),
         notificationDetails: platformDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

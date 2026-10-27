@@ -11,6 +11,9 @@ class WishItem {
   final WishStatus status;
   final String? imageUrl;
   final DesireLevel desireLevel;
+  final int lockDurationHours;
+  final double? workHoursEquivalent;
+  final String? category;
 
   WishItem({
     required this.id,
@@ -20,7 +23,22 @@ class WishItem {
     this.status = WishStatus.pending,
     this.imageUrl,
     this.desireLevel = DesireLevel.medium,
+    this.lockDurationHours = 48,
+    this.workHoursEquivalent,
+    this.category,
   });
+
+  /// The exact moment this item's cooling timer expires
+  DateTime get unlockAt => createdAt.add(Duration(hours: lockDurationHours));
+
+  /// Whether the cooling period has finished
+  bool get isUnlocked => DateTime.now().isAfter(unlockAt);
+
+  /// Time remaining in the cooling-off queue
+  Duration get remainingTime {
+    if (isUnlocked) return Duration.zero;
+    return unlockAt.difference(DateTime.now());
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,6 +49,9 @@ class WishItem {
       'status': status.index,
       'imageUrl': imageUrl,
       'desireLevel': desireLevel.index,
+      'lockDurationHours': lockDurationHours,
+      'workHoursEquivalent': workHoursEquivalent,
+      'category': category,
     };
   }
 
@@ -43,6 +64,9 @@ class WishItem {
       status: map['status'] != null ? WishStatus.values[map['status']] : WishStatus.pending,
       imageUrl: map['imageUrl'],
       desireLevel: map['desireLevel'] != null ? DesireLevel.values[map['desireLevel']] : DesireLevel.medium,
+      lockDurationHours: map['lockDurationHours'] ?? 48,
+      workHoursEquivalent: map['workHoursEquivalent'] != null ? (map['workHoursEquivalent'] as num).toDouble() : null,
+      category: map['category'],
     );
   }
 
@@ -59,6 +83,9 @@ class WishItem {
     WishStatus? status,
     String? imageUrl,
     DesireLevel? desireLevel,
+    int? lockDurationHours,
+    double? workHoursEquivalent,
+    String? category,
   }) {
     return WishItem(
       id: id ?? this.id,
@@ -68,6 +95,9 @@ class WishItem {
       status: status ?? this.status,
       imageUrl: imageUrl ?? this.imageUrl,
       desireLevel: desireLevel ?? this.desireLevel,
+      lockDurationHours: lockDurationHours ?? this.lockDurationHours,
+      workHoursEquivalent: workHoursEquivalent ?? this.workHoursEquivalent,
+      category: category ?? this.category,
     );
   }
 }

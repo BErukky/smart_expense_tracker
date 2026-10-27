@@ -6,27 +6,33 @@ A smart, beautifully designed Flutter app that helps you fight impulse buying by
 
 ---
 
-## ✨ Features
+## ✨ Flagship Features (2026 Edition)
 
-### 🧠 The Core Mechanic
-- **48-Hour Cooling Queue** — Add any item you want to buy. It locks for 48 hours with a live countdown timer.
-- **Buy or Pass** — Once unlocked, you decide. Hit "Pass" and the money is counted as saved.
-- **Money Saved Dashboard** — A real-time total of every purchase you successfully passed on.
+### 🧠 The Anti-Impulse Engine
+- **Adaptive Cooling Queue** — Dynamic timers (24h, 48h, 72h, or 7 Days) automatically scaled to the purchase price to let dopamine subside.
+- **⚡ Life Energy Calculator** — Enter your hourly wage once; every item instantly translates into the exact hours or workdays of your life needed to pay for it.
+- **📈 20-Year Opportunity Cost** — Live projection of what that money would grow into at an 8% index return (e.g., "$150 today = $699 in 20 yrs").
+- **🛡️ 15-Second Reality Check** — Before locking an item, an interactive interrogation challenges you: *Will you care in 3 months? Do you already own something similar?*
+- **✨ AI Devil's Advocate** — Optional Groq (LLaMA 3.1) or Google Gemini integration for instant, witty roasts and reality checks. Works **100% offline** with built-in heuristic templates if no API key is provided.
+- **🏆 Victory & Brag Cards** — Whenever you pass on a purchase, celebrate with a sleek shareable card showing dollars and work hours saved.
 
 ### 🎨 Premium UI/UX
-- **Dark Mode & Light Mode** — Toggle between a sleek dark neon aesthetic and a clean professional light mode.
-- **Hero Image Cards** — Paste an image URL when adding an item and the card renders it as a beautiful background with gradient overlay.
-- **Desire Level Badges** — Rate your impulse Low / Medium / High. Cards color-code themselves (green, orange, red) to reflect your urgency.
+- **Category System** — Tag items with icons (💻 Tech, 👕 Fashion, 🎧 Gadgets, 🎮 Gaming, 🍔 Dining, 📚 Books).
+- **Cooling Progress Indicator** — Visual progress bars on each card tracking elapsed cooling time.
+- **Hero Image Cards** — Paste an image URL to render rich dynamic backgrounds with gradient overlays.
+- **Desire Level Badges** — Rate impulse urgency Low / Medium / High with reactive color-coded borders.
+- **Dark Mode & Light Mode** — Seamless toggle between sleek dark neon aesthetic and clean professional light mode.
 
-### 🌍 Global Ready
-- **Dynamic Currency Picker** — On first launch, pick your local currency from a searchable offline database (NGN ₦, EUR €, GBP £, USD $, and 150+ more). No APIs. No costs.
-- **Persistent Settings** — Your theme and currency choices are saved locally and remembered across sessions.
+### 🌍 Global Ready & 100% Private
+- **Zero Server Costs & Local-First** — Your financial data stays entirely on your device. Zero servers to maintain, zero privacy tracking.
+- **Dynamic Currency Picker** — Searchable offline database with 150+ global currencies (NGN ₦, EUR €, GBP £, USD $, and more).
+- **Persistent Preferences** — Themes, hourly wage, currency, and AI keys are remembered across sessions.
 
 ### 🔔 Smart Notifications *(Android & iOS)*
-- **24-Hour Reminder** — "Halfway there! Still thinking about it?"
+- **Halfway Reminder** — "Halfway through your cooling period! Still thinking about it?"
 - **1-Hour Warning** — "Almost time to decide."
 - **Unlock Alert** — "Your item is ready! Buy it or pass and save?"
-- Notifications are **automatically cancelled** if you decide early.
+- Notifications automatically cancel when you decide early.
 
 ---
 

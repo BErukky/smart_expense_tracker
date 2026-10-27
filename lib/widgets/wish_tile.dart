@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/wish_item.dart';
 import '../settings_provider.dart';
+import '../utils/cost_calculator.dart';
 
 class WishTile extends StatefulWidget {
   final WishItem item;
@@ -34,7 +35,7 @@ class _WishTileState extends State<WishTile> {
   void _calculateRemaining() {
     if (widget.item.status != WishStatus.pending) return;
 
-    final unlockTime = widget.item.createdAt.add(const Duration(hours: 48));
+    final unlockTime = widget.item.unlockAt;
     final now = DateTime.now();
 
     if (now.isAfter(unlockTime)) {
@@ -46,7 +47,7 @@ class _WishTileState extends State<WishTile> {
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         if (!mounted) return;
         setState(() {
-          final currentUnlockTime = widget.item.createdAt.add(const Duration(hours: 48));
+          final currentUnlockTime = widget.item.unlockAt;
           final currentNow = DateTime.now();
           if (currentNow.isAfter(currentUnlockTime)) {
             _isUnlocked = true;
@@ -67,59 +68,104 @@ class _WishTileState extends State<WishTile> {
   }
 
   String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String twoDigitMinutes = twoDigits(d.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(d.inSeconds.remainder(60));
-    return "${twoDigits(d.inHours)}h ${twoDigitMinutes}m ${twoDigitSeconds}s";
+    if (d <= Duration.zero) return 'Ready to decide!';
+    final days = d.inDays;
+    final hours = d.inHours % 24;
+    final minutes = d.inMinutes % 60;
+    final seconds = d.inSeconds % 60;
+
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    if (days > 0) {
+      return '${days}d ${hours}h ${twoDigits(minutes)}m';
+    }
+    return '${twoDigits(d.inHours)}h ${twoDigits(minutes)}m ${twoDigits(seconds)}s';
+  }
+
+  double _calculateProgress() {
+    final totalSeconds = widget.item.lockDurationHours * 3600;
+    if (totalSeconds <= 0) return 1.0;
+    final elapsedSeconds = DateTime.now().difference(widget.item.createdAt).inSeconds;
+    return (elapsedSeconds / totalSeconds).clamp(0.0, 1.0);
   }
 
   Color _getDesireColor() {
     switch (widget.item.desireLevel) {
       case DesireLevel.high:
-        return Colors.redAccent;
+        return const Color(0xFFFF5252); // Red accent
       case DesireLevel.medium:
-        return Colors.orangeAccent;
+        return const Color(0xFFFFAB40); // Amber/orange accent
       case DesireLevel.low:
-        return Colors.greenAccent;
+        return const Color(0xFF69F0AE); // Green accent
+    }
+  }
+
+  String _getCategoryIcon(String? category) {
+    switch (category?.toLowerCase()) {
+      case 'tech':
+        return '💻';
+      case 'fashion':
+      case 'clothes':
+        return '👕';
+      case 'gaming':
+        return '🎮';
+      case 'dining':
+      case 'food':
+        return '🍔';
+      case 'books':
+        return '📚';
+      case 'gadgets':
+      default:
+        return '🎧';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isPending = widget.item.status == WishStatus.pending;
+    final isPassed = widget.item.status == WishStatus.passed;
     final isBought = widget.item.status == WishStatus.bought;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final primaryColor = Theme.of(context).colorScheme.primary;
     final secondaryColor = Theme.of(context).colorScheme.secondary;
     final cardColor = Theme.of(context).cardColor;
-    final currencySymbol = context.watch<SettingsProvider>().currencySymbol;
+    final settings = context.watch<SettingsProvider>();
+
+    final workHours = widget.item.workHoursEquivalent ??
+        (settings.hasHourlyWage
+            ? CostCalculator.calculateWorkHours(widget.item.amount, settings.hourlyWage)
+            : null);
+
+    final progress = _calculateProgress();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
         border: Border.all(
-          color: _getDesireColor().withOpacity(isDark ? 0.3 : 0.2),
-          width: 2,
+          color: isPassed
+              ? secondaryColor.withValues(alpha: 0.6)
+              : _getDesireColor().withValues(alpha: isDark ? 0.35 : 0.2),
+          width: isPassed ? 2 : 1.5,
         ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Hero Image Section
+          // Hero Image
           if (widget.item.imageUrl != null && widget.item.imageUrl!.isNotEmpty)
             SizedBox(
-              height: 140,
+              height: 130,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -133,7 +179,6 @@ class _WishTileState extends State<WishTile> {
                       );
                     },
                   ),
-                  // Gradient overlay to make text pop
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -143,85 +188,170 @@ class _WishTileState extends State<WishTile> {
                           Colors.transparent,
                           cardColor,
                         ],
-                        stops: const [0.4, 1.0],
+                        stops: const [0.35, 1.0],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          
+
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Top Tags (Category, Desire Urgency, Lock Duration)
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Category badge
+                    if (widget.item.category != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_getCategoryIcon(widget.item.category), style: const TextStyle(fontSize: 12)),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.item.category!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.grey[300] : Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Desire badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getDesireColor().withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${widget.item.desireLevel.name.toUpperCase()} DESIRE',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: _getDesireColor(),
+                        ),
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // Lock Duration badge
+                    if (isPending)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${widget.item.lockDurationHours}h LOCK',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Title & Price
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.item.title,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _getDesireColor().withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '${widget.item.desireLevel.name.toUpperCase()} DESIRE',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: _getDesireColor(),
-                              ),
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        widget.item.title,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 12),
                     Text(
-                      '$currencySymbol${widget.item.amount.toStringAsFixed(2)}',
+                      '${settings.currencySymbol}${widget.item.amount.toStringAsFixed(2)}',
                       style: TextStyle(
-                        color: primaryColor,
+                        color: isPassed ? secondaryColor : primaryColor,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                
+
+                // Life Energy Badge
+                if (workHours != null && workHours > 0) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.bolt, color: Colors.amber, size: 15),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Equal to ${CostCalculator.formatWorkHours(workHours)}',
+                        style: const TextStyle(
+                          color: Colors.amber,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                // Pending State (Countdown or Action buttons)
                 if (isPending) ...[
-                  const SizedBox(height: 20),
-                  if (!_isUnlocked)
+                  const SizedBox(height: 14),
+
+                  if (!_isUnlocked) ...[
+                    // Progress bar
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          progress >= 1.0 ? secondaryColor : primaryColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.03),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.lock_clock, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 20),
+                          Icon(Icons.lock_clock, color: isDark ? Colors.grey[400] : Colors.grey[600], size: 18),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Unlocks in ${_formatDuration(_remaining)}',
                               style: TextStyle(
-                                color: isDark ? Colors.grey[300] : Colors.grey[700],
-                                fontSize: 16,
+                                color: isDark ? Colors.grey[300] : Colors.grey[800],
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -229,8 +359,8 @@ class _WishTileState extends State<WishTile> {
                           ),
                           // DEV TESTING BUTTON: Fast Forward
                           IconButton(
-                            icon: const Icon(Icons.fast_forward, color: Colors.blueAccent),
-                            tooltip: 'Skip Timer (Test Mode)',
+                            icon: const Icon(Icons.fast_forward, color: Colors.blueAccent, size: 20),
+                            tooltip: 'Unlock Now (Demo / Test)',
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onPressed: () {
@@ -242,67 +372,70 @@ class _WishTileState extends State<WishTile> {
                           ),
                         ],
                       ),
-                    )
-                  else
+                    ),
+                  ] else ...[
+                    // Unlocked decision buttons
                     Row(
                       children: [
                         Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor.withOpacity(0.1),
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.shopping_bag_outlined, size: 18),
+                            label: const Text('Buy Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              side: BorderSide(color: primaryColor.withValues(alpha: 0.5)),
                               foregroundColor: primaryColor,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
                             ),
                             onPressed: widget.onBuy,
-                            child: const Text('Buy Now', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: ElevatedButton(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.shield, size: 18),
+                            label: const Text('Pass & Save', style: TextStyle(fontWeight: FontWeight.bold)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: secondaryColor.withOpacity(0.1),
-                              foregroundColor: secondaryColor,
+                              backgroundColor: secondaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
                             ),
                             onPressed: widget.onPass,
-                            child: const Text('Pass (Save \$)', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
                     ),
+                  ],
                 ] else ...[
-                  const SizedBox(height: 16),
+                  // Resolved status badge
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                     decoration: BoxDecoration(
-                      color: isBought 
-                          ? Colors.grey.withOpacity(0.1) 
-                          : secondaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: isBought
+                          ? Colors.grey.withValues(alpha: 0.12)
+                          : secondaryColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isBought ? Icons.shopping_bag : Icons.savings,
+                          isBought ? Icons.shopping_bag : Icons.shield,
                           size: 16,
                           color: isBought ? Colors.grey : secondaryColor,
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          isBought ? 'Bought' : 'Passed & Saved!',
+                          isBought
+                              ? 'Bought'
+                              : 'Impulse Defeated! Kept ${settings.currencySymbol}${widget.item.amount.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: isBought ? Colors.grey : secondaryColor,
                             fontWeight: FontWeight.bold,
+                            fontSize: 13,
                           ),
                         ),
                       ],

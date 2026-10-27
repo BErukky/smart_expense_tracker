@@ -133,12 +133,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF00E5FF).withOpacity(0.1),
+                            color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF00E5FF).withOpacity(0.3), width: 2),
+                            border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3), width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00E5FF).withOpacity(0.2),
+                                color: const Color(0xFF00E5FF).withValues(alpha: 0.2),
                                 blurRadius: 30,
                                 offset: const Offset(0, 10),
                               ),
@@ -170,7 +170,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               height: 1.5,
                             ),
                           ),
@@ -259,7 +259,7 @@ class _StartButtonState extends State<_StartButton>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF00E5FF).withOpacity(_isPressed ? 0.2 : 0.4),
+                color: const Color(0xFF00E5FF).withValues(alpha: _isPressed ? 0.2 : 0.4),
                 blurRadius: _isPressed ? 10 : 20,
                 offset: Offset(0, _isPressed ? 4 : 8),
               ),
