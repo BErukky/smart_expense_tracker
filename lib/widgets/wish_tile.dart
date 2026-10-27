@@ -4,17 +4,22 @@ import 'package:provider/provider.dart';
 import '../models/wish_item.dart';
 import '../settings_provider.dart';
 import '../utils/cost_calculator.dart';
+import 'item_detail_sheet.dart';
 
 class WishTile extends StatefulWidget {
   final WishItem item;
   final VoidCallback onBuy;
   final VoidCallback onPass;
+  final Function(WishItem updatedItem)? onUpdate;
+  final VoidCallback? onDelete;
 
   const WishTile({
     super.key,
     required this.item,
     required this.onBuy,
     required this.onPass,
+    this.onUpdate,
+    this.onDelete,
   });
 
   @override
@@ -159,10 +164,21 @@ class _WishTileState extends State<WishTile> {
         ),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Hero Image
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            ItemDetailSheet.show(
+              context,
+              item: widget.item,
+              onUpdate: (updated) => widget.onUpdate?.call(updated),
+              onDelete: () => widget.onDelete?.call(),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Hero Image
           if (widget.item.imageUrl != null && widget.item.imageUrl!.isNotEmpty)
             SizedBox(
               height: 130,
@@ -447,6 +463,8 @@ class _WishTileState extends State<WishTile> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

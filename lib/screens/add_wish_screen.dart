@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import '../models/wish_item.dart';
 import '../services/notification_service.dart';
+import '../services/url_scraper_service.dart';
 import '../settings_provider.dart';
 import '../utils/cost_calculator.dart';
 import '../widgets/reality_check_dialog.dart';
@@ -37,6 +39,56 @@ class _AddWishScreenState extends State<AddWishScreen> {
   ];
 
   final List<int> _durations = [24, 48, 72, 168];
+  bool _isScraping = false;
+
+  void _pasteAndScrapeLink() async {
+    final clipData = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = clipData?.text?.trim();
+    if (text == null || (!text.startsWith('http://') && !text.startsWith('https://'))) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please copy a valid product URL (http/https) first!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isScraping = true);
+
+    final product = await UrlScraperService().scrapeUrl(text);
+
+    if (mounted) {
+      setState(() => _isScraping = false);
+      if (product != null) {
+        if (product.title != null && product.title!.isNotEmpty) {
+          _titleController.text = product.title!;
+        }
+        if (product.amount != null && product.amount! > 0) {
+          _amountController.text = product.amount!.toStringAsFixed(2);
+        }
+        if (product.imageUrl != null && product.imageUrl!.isNotEmpty) {
+          _imageController.text = product.imageUrl!;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚡ Product details auto-filled from link!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not auto-extract details. You can enter them manually.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -170,6 +222,37 @@ class _AddWishScreenState extends State<AddWishScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Paste Link Button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'What do you want to buy?',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                  ),
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    icon: _isScraping
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.link, size: 16),
+                    label: Text(_isScraping ? 'Scanning...' : 'Paste Store Link 🔗'),
+                    onPressed: _isScraping ? null : _pasteAndScrapeLink,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+
               // Title Input
               TextFormField(
                 controller: _titleController,

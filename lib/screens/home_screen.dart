@@ -9,6 +9,7 @@ import '../services/notification_service.dart';
 import '../utils/cost_calculator.dart';
 import '../widgets/settings_dialog.dart';
 import '../widgets/victory_card_dialog.dart';
+import 'analytics_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -120,6 +121,18 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Impulse Control'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.insights_rounded),
+            tooltip: 'Anti-Impulse Insights',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AnalyticsScreen(wishes: _wishes),
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.tune),
             tooltip: 'Preferences & Wage',
             onPressed: () => SettingsDialog.show(context),
@@ -138,42 +151,54 @@ class _HomeScreenState extends State<HomeScreen> {
           : Column(
               children: [
                 // Total Money & Life Energy Saved Dashboard
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: secondaryColor.withValues(alpha: isDark ? 0.35 : 0.15),
-                      width: 1.5,
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AnalyticsScreen(wishes: _wishes),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: secondaryColor.withValues(alpha: isDark ? 0.35 : 0.15),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: secondaryColor.withValues(alpha: isDark ? 0.12 : 0.06),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: secondaryColor.withValues(alpha: isDark ? 0.12 : 0.06),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shield, color: secondaryColor, size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Total Money Saved',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.shield, color: secondaryColor, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Total Money Saved',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 6),
+                            Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey[500]),
+                          ],
+                        ),
                       const SizedBox(height: 6),
                       Text(
                         '$currencySymbol${_moneySaved.toStringAsFixed(2)}',
@@ -205,6 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
+              ),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -264,6 +290,24 @@ class _HomeScreenState extends State<HomeScreen> {
                               item: item,
                               onBuy: () => _updateStatus(originalIndex, WishStatus.bought),
                               onPass: () => _updateStatus(originalIndex, WishStatus.passed),
+                              onUpdate: (updated) {
+                                setState(() {
+                                  _wishes[originalIndex] = updated;
+                                });
+                                _saveWishes();
+                              },
+                              onDelete: () {
+                                setState(() {
+                                  _wishes.removeAt(originalIndex);
+                                });
+                                _saveWishes();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Item abandoned.'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
                             );
                           },
                         ),
